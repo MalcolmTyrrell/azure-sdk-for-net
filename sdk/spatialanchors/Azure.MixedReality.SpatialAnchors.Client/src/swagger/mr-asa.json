@@ -1,0 +1,234 @@
+﻿{
+    "swagger": "2.0",
+    "info": {
+        "title": "SpatialAnchorsClient",
+        "description": "Azure Spatial Anchors anchor management APIs.",
+        "version": "2019-02-28-preview"
+    },
+    "host": "manage.sa.mixedreality.azure.com",
+    "schemes": [
+        "https"
+    ],
+    "paths": {
+        "/Accounts/{accountId}/spatialanchors/{spatialAnchorId}": {
+            "delete": {
+                "tags": [
+                    "Anchors"
+                ],
+                "summary": "Deletes an anchor by id.",
+                "operationId": "DeleteAnchor",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "accountId",
+                        "description": "The account identifier.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "path",
+                        "name": "spatialAnchorId",
+                        "description": "The spatial anchor identifier.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "header",
+                        "name": "If-Match",
+                        "description": "The anchor etag.",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "X-MRC-CV",
+                        "x-ms-client-name": "ClientRequestId",
+                        "in": "header",
+                        "description": "The client request correlation vector, which should be set to a new value for each request.",
+                        "type": "string",
+                        "x-ms-parameter-grouping": {
+                            "name": "delete-request-options"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "api-version",
+                        "description": "The API version.",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "headers": {
+                            "MS-CV": {
+                                "x-ms-client-name": "RequestId",
+                                "description": "The service response correlation vector, which will be a new value for every response.",
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/Accounts/{accountId}/spatialanchors/properties": {
+            "post": {
+                "tags": [
+                    "Anchors"
+                ],
+                "summary": "Gets anchor properties by spatial anchor id.",
+                "operationId": "GetPropertiesById",
+                "consumes": [
+                    "application/json-patch+json",
+                    "application/json",
+                    "text/json",
+                    "application/*+json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "accountId",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "The spatial anchor properties request.",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/GetPropertiesForSpatialAnchorsRequest"
+                        }
+                    },
+                    {
+                        "name": "X-MRC-CV",
+                        "x-ms-client-name": "ClientRequestId",
+                        "in": "header",
+                        "description": "The client request correlation vector, which should be set to a new value for each request.",
+                        "type": "string",
+                        "x-ms-parameter-grouping": {
+                            "name": "properties-request-options"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "api-version",
+                        "description": "The API version.",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/GetPropertiesForSpatialAnchorsResponse"
+                        },
+                        "headers": {
+                            "MS-CV": {
+                                "x-ms-client-name": "RequestId",
+                                "description": "The service response correlation vector, which will be a new value for every response.",
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "SpatialAnchorRequestInfo": {
+            "type": "object",
+            "properties": {
+                "spatialAnchorId": {
+                    "description": "The identifier for the anchor to request information.",
+                    "type": "string"
+                },
+                "etag": {
+                    "description": "An identifier representing the returned state of the resource.",
+                    "type": "string"
+                }
+            }
+        },
+        "GetPropertiesForSpatialAnchorsRequest": {
+            "type": "object",
+            "properties": {
+                "spatialAnchors": {
+                    "description": "The list of spatial anchors to request information.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/SpatialAnchorRequestInfo"
+                    }
+                }
+            }
+        },
+        "SpatialAnchorInfo": {
+            "required": [
+                "etag",
+                "metadata",
+                "neighborhoodAnchorId"
+            ],
+            "type": "object",
+            "properties": {
+                "etag": {
+                    "description": "An identifier representing the returned state of the resource.",
+                    "type": "string"
+                },
+                "metadata": {
+                    "description": "Anchor metadata.",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "expirationUnixTimeMS": {
+                    "description": "A Unix timestamp indicating the point in time the anchor expires.",
+                    "format": "int64",
+                    "type": "integer"
+                },
+                "spatialAnchorToNeighborhoodAnchorPoseData": {
+                    "description": "Anchor pose information.",
+                    "type": "string"
+                },
+                "neighborhoodAnchorId": {
+                    "description": "The anchor's neighborhood anchor identifier.",
+                    "type": "string"
+                }
+            }
+        },
+        "SpatialAnchorResponseInfo": {
+            "required": [
+                "code",
+                "spatialAnchorId"
+            ],
+            "type": "object",
+            "properties": {
+                "spatialAnchorId": {
+                    "description": "The spatial anchor identifier.",
+                    "type": "string"
+                },
+                "code": {
+                    "description": "The response code.",
+                    "type": "string"
+                },
+                "spatialAnchor": {
+                    "description": "The requested spatial anchor information.",
+                    "$ref": "#/definitions/SpatialAnchorInfo"
+                }
+            }
+        },
+        "GetPropertiesForSpatialAnchorsResponse": {
+            "type": "object",
+            "properties": {
+                "spatialAnchors": {
+                    "description": "A list of spatial anchors information.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/SpatialAnchorResponseInfo"
+                    }
+                }
+            }
+        }
+    }
+}
