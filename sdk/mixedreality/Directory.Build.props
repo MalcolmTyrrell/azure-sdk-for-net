@@ -5,6 +5,6 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory).., Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <AzureMixedRealityAuthenticationSharedSources>$(MSBuildThisFileDirectory)\..\..\mixedreality\Azure.MixedReality.Authentication\src\Shared\</AzureMixedRealityAuthenticationSharedSources>
+    <AzureMixedRealityAuthenticationSharedSources>$(MSBuildThisFileDirectory)\Azure.MixedReality.Authentication\shared\</AzureMixedRealityAuthenticationSharedSources>
   </PropertyGroup>
 </Project>
