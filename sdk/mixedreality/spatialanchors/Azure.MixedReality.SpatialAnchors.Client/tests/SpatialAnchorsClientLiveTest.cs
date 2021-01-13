@@ -1,18 +1,16 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Threading.Tasks;
 using Azure.Core.TestFramework;
-using Azure.MixedReality.Authentication;
 using Azure.MixedReality.SpatialAnchors.Client.Models;
 using NUnit.Framework;
+using System.Threading.Tasks;
 
 namespace Azure.MixedReality.SpatialAnchors.Client.Tests
 {
     public class SpatialAnchorsClientLiveTest : RecordedTestBase<SpatialAnchorsClientTestEnvironment>
     {
-        private readonly string spatialAnchorsAccountDomain;
-        private readonly string spatialAnchorsAccountId;
+        private readonly SpatialAnchorsAccount account;
 
         public SpatialAnchorsClientLiveTest(bool isAsync)
             : base(isAsync, RecordedTestMode.Live)
@@ -20,13 +18,12 @@ namespace Azure.MixedReality.SpatialAnchors.Client.Tests
             //TODO: https://github.com/Azure/autorest.csharp/issues/689
             TestDiagnostics = false;
 
-            this.spatialAnchorsAccountId = TestEnvironment.AccountId;
-            this.spatialAnchorsAccountDomain = TestEnvironment.AccountDomain;
+            account = new SpatialAnchorsAccount(TestEnvironment.AccountId, TestEnvironment.AccountDomain);
         }
 
-        private SpatialAnchorsClient CreateClient(MixedRealityCredential credential)
+        private SpatialAnchorsClient CreateClient(AzureKeyCredential keyCredential)
         {
-            return InstrumentClient(new SpatialAnchorsClient(credential, InstrumentClientOptions(new SpatialAnchorsClientOptions())));
+            return InstrumentClient(new SpatialAnchorsClient(account, keyCredential, InstrumentClientOptions(new SpatialAnchorsClientOptions())));
         }
 
         [Test]
@@ -35,8 +32,9 @@ namespace Azure.MixedReality.SpatialAnchors.Client.Tests
             string spatialAnchorsAccountKey = TestEnvironment.AccountKey;
             string anchorId = TestEnvironment.AnchorId;
 
-            MixedRealityCredential credential = new MixedRealityCredential(spatialAnchorsAccountId, spatialAnchorsAccountDomain, spatialAnchorsAccountKey);
-            SpatialAnchorsClient client = CreateClient(credential);
+            AzureKeyCredential accountKeyCredential = new AzureKeyCredential(spatialAnchorsAccountKey);
+
+            SpatialAnchorsClient client = CreateClient(accountKeyCredential);
 
             SpatialAnchorRequestInfo requestInfo = new SpatialAnchorRequestInfo
             {

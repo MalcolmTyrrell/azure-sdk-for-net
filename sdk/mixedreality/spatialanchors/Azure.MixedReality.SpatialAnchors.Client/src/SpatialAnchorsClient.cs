@@ -17,7 +17,7 @@ namespace Azure.MixedReality.SpatialAnchors.Client
     /// </summary>
     public class SpatialAnchorsClient
     {
-        private readonly string _accountId;
+        private readonly SpatialAnchorsAccount _account;
 
         private readonly ClientDiagnostics _clientDiagnostics;
 
@@ -28,44 +28,42 @@ namespace Azure.MixedReality.SpatialAnchors.Client
         /// <summary>
         /// Initializes a new instance of the <see cref="SpatialAnchorsClient" /> class.
         /// </summary>
-        /// <param name="credential">The credential used to access the Azure Spatial Anchors account.</param>
-        public SpatialAnchorsClient(MixedRealityCredential credential)
-            : this(credential, new SpatialAnchorsClientOptions()) { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SpatialAnchorsClient"/> class.
-        /// </summary>
-        /// <param name="credential">The credential used to access the Azure Spatial Anchors account.</param>
+        /// <param name="account">The Azure Spatial Anchors account details.</param>
+        /// <param name="accessToken">An access token used to access the specified Azure Spatial Anchors account.</param>
         /// <param name="options">The options.</param>
-        public SpatialAnchorsClient(MixedRealityCredential credential, SpatialAnchorsClientOptions options)
-            : this(ConstructAsaEndpointUrl(credential?.AccountDomain ?? throw new ArgumentNullException(nameof(credential))), credential, options) { }
+        public SpatialAnchorsClient(SpatialAnchorsAccount account, AccessToken accessToken, SpatialAnchorsClientOptions? options = null)
+            : this(account, new StaticAccessTokenCredential(accessToken), options) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SpatialAnchorsClient" /> class.
         /// </summary>
-        /// <param name="endpoint">The Azure Spatial Anchors service endpoint.</param>
-        /// <param name="credential">The credential used to access the Azure Spatial Anchors account.</param>
-        public SpatialAnchorsClient(Uri endpoint, MixedRealityCredential credential)
-            : this(endpoint, credential, new SpatialAnchorsClientOptions()) { }
+        /// <param name="account">The Azure Spatial Anchors account details.</param>
+        /// <param name="keyCredential">The Azure Spatial Anchors account primary or secondary key credential.</param>
+        /// <param name="options">The options.</param>
+        public SpatialAnchorsClient(SpatialAnchorsAccount account, AzureKeyCredential keyCredential, SpatialAnchorsClientOptions? options = null)
+            : this(account, new MixedRealityAccountKeyCredential(account.AccountId, keyCredential), options) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SpatialAnchorsClient" /> class.
         /// </summary>
-        /// <param name="endpoint">The Azure Spatial Anchors service endpoint.</param>
-        /// <param name="credential">The credential used to access the Azure Spatial Anchors account.</param>
+        /// <param name="account">The Azure Spatial Anchors account details.</param>
+        /// <param name="credential">The credential used to access the Mixed Reality service.</param>
         /// <param name="options">The options.</param>
-        public SpatialAnchorsClient(Uri endpoint, MixedRealityCredential credential, SpatialAnchorsClientOptions options)
+        public SpatialAnchorsClient(SpatialAnchorsAccount account, TokenCredential credential, SpatialAnchorsClientOptions? options = null)
         {
-            Argument.AssertNotNull(endpoint, nameof(endpoint));
+            Argument.AssertNotNull(account, nameof(account));
             Argument.AssertNotNull(credential, nameof(credential));
-            Argument.AssertNotNull(options, nameof(options));
 
-            TokenCredential tokenCredential = new MixedRealityCredentialAdapter(credential);
+            options ??= new SpatialAnchorsClientOptions();
 
-            this._accountId = credential.AccountId;
-            this._clientDiagnostics = new ClientDiagnostics(options);
-            this._pipeline = HttpPipelineBuilder.Build(options, new BearerTokenAuthenticationPolicy(tokenCredential, GetDefaultScope(endpoint)));
-            this._restClient = new SpatialAnchorsRestClient(this._clientDiagnostics, this._pipeline, endpoint, options.Version);
+            Uri authenticationEndpoint = options.AuthenticationEndpoint ?? AuthenticationEndpoint.ConstructFromDomain(account.AccountDomain);
+            TokenCredential mrTokenCredential = MixedRealityTokenCredential.GetMixedRealityCredential(account.AccountId, authenticationEndpoint, credential);
+            Uri serviceEndpoint = options.ServiceEndpoint ?? ConstructAsaEndpointUrl(account.AccountDomain);
+
+            _account = account;
+            _clientDiagnostics = new ClientDiagnostics(options);
+            _pipeline = HttpPipelineBuilder.Build(options, new BearerTokenAuthenticationPolicy(mrTokenCredential, GetDefaultScope(serviceEndpoint)));
+            _restClient = new SpatialAnchorsRestClient(_clientDiagnostics, _pipeline, serviceEndpoint, options.Version);
         }
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
@@ -99,7 +97,7 @@ namespace Azure.MixedReality.SpatialAnchors.Client
                 SpatialAnchorId = spatialAnchorId
             };
 
-            return this.GetAnchorProperties(request, cancellationToken);
+            return GetAnchorProperties(request, cancellationToken);
         }
 
         /// <summary>
@@ -119,7 +117,7 @@ namespace Azure.MixedReality.SpatialAnchors.Client
                 SpatialAnchorId = spatialAnchorId
             };
 
-            return this.GetAnchorPropertiesAsync(request, cancellationToken);
+            return GetAnchorPropertiesAsync(request, cancellationToken);
         }
 
         /// <summary>
@@ -134,7 +132,7 @@ namespace Azure.MixedReality.SpatialAnchors.Client
         {
             Argument.AssertNotNull(anchorRequest, nameof(anchorRequest));
 
-            Response<IReadOnlyList<SpatialAnchorResponseInfo>> response = this.GetAnchorProperties(new[] { anchorRequest }, cancellationToken);
+            Response<IReadOnlyList<SpatialAnchorResponseInfo>> response = GetAnchorProperties(new[] { anchorRequest }, cancellationToken);
 
             return Response.FromValue(response.Value[0], response.GetRawResponse());
         }
@@ -151,7 +149,7 @@ namespace Azure.MixedReality.SpatialAnchors.Client
         {
             Argument.AssertNotNull(anchorRequest, nameof(anchorRequest));
 
-            Response<IReadOnlyList<SpatialAnchorResponseInfo>> response = await this.GetAnchorPropertiesAsync(new[] { anchorRequest }, cancellationToken)
+            Response<IReadOnlyList<SpatialAnchorResponseInfo>> response = await GetAnchorPropertiesAsync(new[] { anchorRequest }, cancellationToken)
                 .ConfigureAwait(false);
 
             return Response.FromValue(response.Value[0], response.GetRawResponse());
@@ -185,7 +183,7 @@ namespace Azure.MixedReality.SpatialAnchors.Client
                 SpatialAnchorsPropertiesRequest request = new SpatialAnchorsPropertiesRequest(anchorRequests);
 
                 ResponseWithHeaders<SpatialAnchorsPropertiesResponse, SpatialAnchorsGetPropertiesByIdHeaders> response =
-                    this._restClient.GetPropertiesById(this._accountId, request, requestOptions, cancellationToken);
+                    _restClient.GetPropertiesById(_account.AccountId, request, requestOptions, cancellationToken);
 
                 return ResponseWithHeaders.FromValue(response.Value.SpatialAnchors, response.Headers, response.GetRawResponse());
             }
@@ -224,7 +222,7 @@ namespace Azure.MixedReality.SpatialAnchors.Client
                 SpatialAnchorsPropertiesRequest request = new SpatialAnchorsPropertiesRequest(anchorRequests);
 
                 ResponseWithHeaders<SpatialAnchorsPropertiesResponse, SpatialAnchorsGetPropertiesByIdHeaders> response =
-                    await this._restClient.GetPropertiesByIdAsync(this._accountId, request, requestOptions, cancellationToken)
+                    await _restClient.GetPropertiesByIdAsync(_account.AccountId, request, requestOptions, cancellationToken)
                         .ConfigureAwait(false);
 
                 return ResponseWithHeaders.FromValue(response.Value.SpatialAnchors, response.Headers, response.GetRawResponse());
@@ -259,7 +257,7 @@ namespace Azure.MixedReality.SpatialAnchors.Client
                     ClientRequestId = requestCv
                 };
 
-                return this._restClient.DeleteAnchor(this._accountId, spatialAnchor.SpatialAnchorId, spatialAnchor.SpatialAnchor.Etag.ToString(), requestOptions, cancellationToken);
+                return _restClient.DeleteAnchor(_account.AccountId, spatialAnchor.SpatialAnchorId, spatialAnchor.SpatialAnchor.Etag.ToString(), requestOptions, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -292,7 +290,7 @@ namespace Azure.MixedReality.SpatialAnchors.Client
                     ClientRequestId = requestCv
                 };
 
-                return await this._restClient.DeleteAnchorAsync(this._accountId, spatialAnchor.SpatialAnchorId, spatialAnchor.SpatialAnchor.Etag.ToString(), requestOptions, cancellationToken)
+                return await _restClient.DeleteAnchorAsync(_account.AccountId, spatialAnchor.SpatialAnchorId, spatialAnchor.SpatialAnchor.Etag.ToString(), requestOptions, cancellationToken)
                     .ConfigureAwait(false);
             }
             catch (Exception ex)

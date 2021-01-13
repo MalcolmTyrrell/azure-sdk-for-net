@@ -1,28 +1,25 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System;
-using System.Threading.Tasks;
 using Azure.Core.TestFramework;
-using Azure.MixedReality.Authentication;
 using Azure.MixedReality.SpatialAnchors.Client.Models;
 using NUnit.Framework;
+using System;
+using System.Threading.Tasks;
 
 namespace Azure.MixedReality.SpatialAnchors.Client.Tests.Samples
 {
     public class SpatialAnchorsClientGetAnchorPropertiesSamples : SamplesBase<SpatialAnchorsClientTestEnvironment>
     {
-        private readonly string accountDomain;
-        private readonly string accountId;
+        private readonly SpatialAnchorsAccount account;
         private readonly string accountKey;
         private readonly string anchorId;
 
         public SpatialAnchorsClientGetAnchorPropertiesSamples()
         {
+            this.account = new SpatialAnchorsAccount(TestEnvironment.AccountId, TestEnvironment.AccountDomain);
             this.accountKey = TestEnvironment.AccountKey;
             this.anchorId = TestEnvironment.AnchorId;
-            this.accountId = TestEnvironment.AccountId;
-            this.accountDomain = TestEnvironment.AccountDomain;
         }
 
         [Test]
@@ -30,8 +27,8 @@ namespace Azure.MixedReality.SpatialAnchors.Client.Tests.Samples
         {
             #region Snippet:GetAnchorProperties
 
-            MixedRealityCredential credential = new MixedRealityCredential(accountId, accountDomain, accountKey);
-            SpatialAnchorsClient client = new SpatialAnchorsClient(credential);
+            AzureKeyCredential accountKeyCredential = new AzureKeyCredential(accountKey);
+            SpatialAnchorsClient client = new SpatialAnchorsClient(account, accountKeyCredential);
 
             SpatialAnchorResponseInfo response = client.GetAnchorProperties(anchorId);
 
@@ -45,8 +42,8 @@ namespace Azure.MixedReality.SpatialAnchors.Client.Tests.Samples
         {
             #region Snippet:GetAnchorPropertiesAsync
 
-            MixedRealityCredential credential = new MixedRealityCredential(accountId, accountDomain, accountKey);
-            SpatialAnchorsClient client = new SpatialAnchorsClient(credential);
+            AzureKeyCredential accountKeyCredential = new AzureKeyCredential(accountKey);
+            SpatialAnchorsClient client = new SpatialAnchorsClient(account, accountKeyCredential);
 
             SpatialAnchorResponseInfo response = await client.GetAnchorPropertiesAsync(anchorId).ConfigureAwait(false);
 

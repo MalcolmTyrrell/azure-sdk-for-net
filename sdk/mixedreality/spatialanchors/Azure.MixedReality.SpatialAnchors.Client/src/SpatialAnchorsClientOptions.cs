@@ -16,16 +16,31 @@ namespace Azure.MixedReality.SpatialAnchors.Client
         internal string Version { get; }
 
         /// <summary>
+        /// Gets the authentication endpoint.
+        /// </summary>
+        internal Uri? AuthenticationEndpoint { get; }
+
+        /// <summary>
+        /// Gets the service endpoint.
+        /// </summary>
+        internal Uri? ServiceEndpoint { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SpatialAnchorsClientOptions"/> class.
         /// </summary>
         /// <param name="version">The version.</param>
-        public SpatialAnchorsClientOptions(ServiceVersion version = ServiceVersion.V2019_02_28_preview)
+        /// <param name="serviceEndpoint">The service endpoint.</param>
+        /// <param name="authenticationEndpoint">The authentication endpoint.</param>
+        public SpatialAnchorsClientOptions(ServiceVersion version = ServiceVersion.V2019_02_28_preview, Uri? serviceEndpoint = null, Uri? authenticationEndpoint = null)
         {
             Version = version switch
             {
                 ServiceVersion.V2019_02_28_preview => "2019-02-28-preview",
                 _ => throw new ArgumentException($"The service version {version} is not supported by this library.", nameof(version))
             };
+
+            ServiceEndpoint = serviceEndpoint;
+            AuthenticationEndpoint = authenticationEndpoint;
         }
 
         /// <summary>

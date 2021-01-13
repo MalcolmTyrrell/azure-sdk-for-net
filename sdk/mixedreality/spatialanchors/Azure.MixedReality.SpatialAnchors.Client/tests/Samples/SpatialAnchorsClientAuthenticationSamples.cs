@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Core.TestFramework;
 using Azure.Identity;
-using Azure.MixedReality.Authentication;
 using Azure.MixedReality.SpatialAnchors.Client.Models;
 using NUnit.Framework;
 
@@ -16,17 +15,15 @@ namespace Azure.MixedReality.SpatialAnchors.Client.Tests.Samples
 {
     public class SpatialAnchorsClientAuthenticationSamples : SamplesBase<SpatialAnchorsClientTestEnvironment>
     {
-        private readonly string accountDomain;
-        private readonly string accountId;
+        private readonly SpatialAnchorsAccount account;
         private readonly string accountKey;
         private readonly string anchorId;
 
         public SpatialAnchorsClientAuthenticationSamples()
         {
+            this.account = new SpatialAnchorsAccount(TestEnvironment.AccountId, TestEnvironment.AccountDomain);
             this.accountKey = TestEnvironment.AccountKey;
             this.anchorId = TestEnvironment.AnchorId;
-            this.accountId = TestEnvironment.AccountId;
-            this.accountDomain = TestEnvironment.AccountDomain;
         }
 
         [Test]
@@ -34,8 +31,8 @@ namespace Azure.MixedReality.SpatialAnchors.Client.Tests.Samples
         {
             #region Snippet:UsingAccountKeyCredential
 
-            MixedRealityCredential credential = new MixedRealityCredential(accountId, accountDomain, accountKey);
-            SpatialAnchorsClient client = new SpatialAnchorsClient(credential);
+            AzureKeyCredential accountKeyCredential = new AzureKeyCredential(accountKey);
+            SpatialAnchorsClient client = new SpatialAnchorsClient(account, accountKeyCredential);
 
             SpatialAnchorResponseInfo response = client.GetAnchorProperties(anchorId);
 
@@ -58,9 +55,7 @@ namespace Azure.MixedReality.SpatialAnchors.Client.Tests.Samples
                 AuthorityHost = new Uri($"https://login.microsoftonline.com/{tenantId}")
             });
 
-            MixedRealityCredential mrCredential = new MixedRealityCredential(accountId, accountDomain, credential);
-
-            SpatialAnchorsClient client = new SpatialAnchorsClient(mrCredential);
+            SpatialAnchorsClient client = new SpatialAnchorsClient(account, credential);
 
             SpatialAnchorResponseInfo response = client.GetAnchorProperties(anchorId);
 
@@ -74,9 +69,7 @@ namespace Azure.MixedReality.SpatialAnchors.Client.Tests.Samples
         {
             #region Snippet:UsingDefaultAzureCredential
 
-            MixedRealityCredential mrCredential = new MixedRealityCredential(accountId, accountDomain, new DefaultAzureCredential());
-
-            SpatialAnchorsClient client = new SpatialAnchorsClient(mrCredential);
+            SpatialAnchorsClient client = new SpatialAnchorsClient(account, new DefaultAzureCredential());
 
             SpatialAnchorResponseInfo response = client.GetAnchorProperties(anchorId);
 
@@ -105,9 +98,7 @@ namespace Azure.MixedReality.SpatialAnchors.Client.Tests.Samples
                 AuthorityHost = new Uri($"https://login.microsoftonline.com/{tenantId}"),
             });
 
-            MixedRealityCredential mrCredential = new MixedRealityCredential(accountId, accountDomain, credential);
-
-            SpatialAnchorsClient client = new SpatialAnchorsClient(mrCredential);
+            SpatialAnchorsClient client = new SpatialAnchorsClient(account, credential);
 
             SpatialAnchorResponseInfo response = client.GetAnchorProperties(anchorId);
 
@@ -129,9 +120,7 @@ namespace Azure.MixedReality.SpatialAnchors.Client.Tests.Samples
                 TenantId = tenantId,
             });
 
-            MixedRealityCredential mrCredential = new MixedRealityCredential(accountId, accountDomain, credential);
-
-            SpatialAnchorsClient client = new SpatialAnchorsClient(mrCredential);
+            SpatialAnchorsClient client = new SpatialAnchorsClient(account, credential);
 
             SpatialAnchorResponseInfo response = client.GetAnchorProperties(anchorId);
 

@@ -38,12 +38,5 @@ namespace Azure.MixedReality.SpatialAnchors.Client.Tests
         /// Set the SPATIALANCHORS_ANCHOR_ID environment variable.
         /// </remarks>
         public string AnchorId => GetVariable("ANCHOR_ID");
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SpatialAnchorsClientTestEnvironment"/> class.
-        /// </summary>
-        public SpatialAnchorsClientTestEnvironment() : base("spatialanchors")
-        {
-        }
     }
 }

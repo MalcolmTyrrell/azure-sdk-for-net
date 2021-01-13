@@ -74,9 +74,10 @@ See [here](https://docs.microsoft.com/azure/spatial-anchors/concepts/authenticat
 Use the `AccountKeyCredential` object to use an account identifier and account key to authenticate:
 
 ```csharp
-MixedRealityCredential credential = new MixedRealityCredential(accountId, accountDomain, accountKey);
+SpatialAnchorsAccount account = new SpatialAnchorsAccount(accountId, accountDomain);
+AzureKeyCredential accountKeyCredential = new AzureKeyCredential(accountKey);
 
-SpatialAnchorsClient client = new SpatialAnchorsClient(credential);
+SpatialAnchorsClient client = new SpatialAnchorsClient(account, accountKeyCredential);
 ```
 
 #### Authenticating with an AAD client secret
@@ -84,13 +85,14 @@ SpatialAnchorsClient client = new SpatialAnchorsClient(credential);
 Use the `ClientSecretCredential` object to perform client secret authentication.
 
 ```csharp
-TokenCredential aadCredential = new ClientSecretCredential(tenantId, clientId, clientSecret, new TokenCredentialOptions
+SpatialAnchorsAccount account = new SpatialAnchorsAccount(accountId, accountDomain);
+
+TokenCredential credential = new ClientSecretCredential(tenantId, clientId, clientSecret, new TokenCredentialOptions
 {
     AuthorityHost = new Uri($"https://login.microsoftonline.com/{tenantId}")
 });
 
-MixedRealityCredential credential = new MixedRealityCredential(accountId, accountDomain, aadCredential);
-SpatialAnchorsClient client = new SpatialAnchorsClient(credential);
+SpatialAnchorsClient client = new SpatialAnchorsClient(account, credential);
 ```
 
 #### Authenticating a user using device code authentication
@@ -98,6 +100,8 @@ SpatialAnchorsClient client = new SpatialAnchorsClient(credential);
 Use the `DeviceCodeCredential` object to perform device code authentication.
 
 ```csharp
+SpatialAnchorsAccount account = new SpatialAnchorsAccount(accountId, accountDomain);
+
 Task deviceCodeCallback(DeviceCodeInfo deviceCodeInfo, CancellationToken cancellationToken)
 {
     Debug.WriteLine(deviceCodeInfo.Message);
@@ -105,13 +109,12 @@ Task deviceCodeCallback(DeviceCodeInfo deviceCodeInfo, CancellationToken cancell
     return Task.FromResult(0);
 }
 
-TokenCredential deviceCodeCredential = new DeviceCodeCredential(deviceCodeCallback, tenantId, clientId, new TokenCredentialOptions
+TokenCredential credential = new DeviceCodeCredential(deviceCodeCallback, tenantId, clientId, new TokenCredentialOptions
 {
     AuthorityHost = new Uri($"https://login.microsoftonline.com/{tenantId}"),
 });
 
-MixedRealityCredential credential = new MixedRealityCredential(accountId, accountDomain, deviceCodeCredential);
-SpatialAnchorsClient client = new SpatialAnchorsClient(credential);
+SpatialAnchorsClient client = new SpatialAnchorsClient(account, credential);
 ```
 
 See [here](https://github.com/AzureAD/microsoft-authentication-library-for-dotnet/wiki/Device-Code-Flow) for more
@@ -123,26 +126,27 @@ Use the `DefaultAzureCredential` object with `includeInteractiveCredentials: tru
 flow:
 
 ```csharp
-TokenCredential defaultCredential = new DefaultAzureCredential(includeInteractiveCredentials: true);
+SpatialAnchorsAccount account = new SpatialAnchorsAccount(accountId, accountDomain);
+TokenCredential credential = new DefaultAzureCredential(includeInteractiveCredentials: true);
 
-MixedRealityCredential credential = new MixedRealityCredential(accountId, accountDomain, defaultCredential);
-SpatialAnchorsClient client = new SpatialAnchorsClient(credential);
+SpatialAnchorsClient client = new SpatialAnchorsClient(account, credential);
 ```
 
 #### Authenticating with a static access token
 
-Use the `StaticAccessTokenCredential` object to pass an access token previously retrieved from the Mixed Reality STS
+You can pass a Mixed Reality access token as an `AccessToken` previously retrieved from the Mixed Reality STS service
 to be used with a Mixed Reality client library:
 
 ```csharp
+SpatialAnchorsAccount account = new SpatialAnchorsAccount(accountId, accountDomain);
+
 // GetMixedRealityAccessTokenFromWebService is a hypothetical method that retrieves
 // a Mixed Reality access token from a web service. The web service would use the
 // MixedRealityStsClient and credentials to obtain an access token to be returned
 // to the client.
 AccessToken accessToken = GetMixedRealityAccessTokenFromWebService();
 
-MixedRealityCredential credential = new MixedRealityCredential(accountId, accountDomain, accessToken);
-SpatialAnchorsClient client = new SpatialAnchorsClient(credential);
+SpatialAnchorsClient client = new SpatialAnchorsClient(account, accessToken);
 ```
 
 ## Key concepts
